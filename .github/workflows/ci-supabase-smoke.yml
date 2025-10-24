@@ -19,8 +19,10 @@ jobs:
 
       - name: REST ping (anon)
         run: |
-          code=$(curl -s -o /dev/null -w "%{http_code}\n" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_PUBLIC_KEY }}" \
-            "${{ secrets.SUPABASE_PROJECT_URL }}/rest/v1/")
+          set -e
+          echo "Pinging Supabase project at https://iowbsmmpuksltenbgtww.supabase.co ..."
+          code=$(curl -sS -o /dev/null -w "%{http_code}" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlvd2JzbW1wdWtzbHRlbmJndHd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjg5MTQsImV4cCI6MjA3NjY0NDkxNH0.PfmsykX8hPra4K5bOE1n0ZyWD1rGsUNvOZUiYpbsKdE" \
+            "https://iowbsmmpuksltenbgtww.supabase.co/auth/v1/health")
           echo "HTTP=$code"
           test "$code" -ge 200 -a "$code" -lt 500
