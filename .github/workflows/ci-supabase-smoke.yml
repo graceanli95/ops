@@ -17,12 +17,26 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Sanity check secrets are set
+        run: |
+          set -e
+          if [ -z "${{ secrets.SUPABASE_PROJECT_URL }}" ]; then
+            echo "SUPABASE_PROJECT_URL is empty"; exit 1
+          fi
+          if [ -z "${{ secrets.SUPABASE_ANON_PUBLIC_KEY }}" ]; then
+            echo "SUPABASE_ANON_PUBLIC_KEY is empty"; exit 1
+          fi
+          case "${{ secrets.SUPABASE_PROJECT_URL }}" in
+            https://*.supabase.co) echo "URL format OK";;
+            *) echo "URL must look like https://<ref>.supabase.co"; exit 2;;
+          esac
+
       - name: REST ping (anon)
         run: |
           set -e
-          echo "Pinging Supabase project at https://iowbsmmpuksltenbgtww.supabase.co ..."
+          URL="${{ secrets.SUPABASE_PROJECT_URL }}/auth/v1/health"
           code=$(curl -sS -o /dev/null -w "%{http_code}" \
-            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlvd2JzbW1wdWtzbHRlbmJndHd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjg5MTQsImV4cCI6MjA3NjY0NDkxNH0.PfmsykX8hPra4K5bOE1n0ZyWD1rGsUNvOZUiYpbsKdE" \
-            "https://iowbsmmpuksltenbgtww.supabase.co/auth/v1/health")
+            -H "apikey: ${{ secrets.SUPABASE_ANON_PUBLIC_KEY }}" \
+            "$URL")
           echo "HTTP=$code"
           test "$code" -ge 200 -a "$code" -lt 500
